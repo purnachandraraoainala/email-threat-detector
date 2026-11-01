@@ -1,0 +1,24 @@
+From: it-support@your-company-helpdesk.xyz
+To: employee@company.com
+Subject: Action Required: Reset Your Company Password Immediately
+
+Dear User,
+
+Our IT security system has flagged your account for a mandatory password reset due to a potential breach.
+
+You must reset your password within 2 hours or you will lose access to all company systems.
+
+Click the link below to reset your password now:
+http://tinyurl.com/company-reset-password
+
+Please enter your current username and password on the next page to verify your identity before resetting.
+
+This is an automated message. Do not reply to this email.
+
+If you do not reset your password immediately, your account will be locked and you will need to contact HR in person to regain access.
+
+RESET YOUR PASSWORD NOW: http://203.0.113.45/reset/employee-portal
+
+Thank you,
+IT Support Helpdesk
+your-company-helpdesk.xyz

@@ -1,0 +1,22 @@
+From: newsletter@spotify.com
+To: john.doe@gmail.com
+Subject: Your Monthly Spotify Recap is Ready
+
+Hi John,
+
+We hope you're enjoying your music this month! Here is your personal listening recap for November.
+
+Your top artists this month:
+1. Arctic Monkeys
+2. Radiohead
+3. Tame Impala
+
+You listened to 312 songs and discovered 14 new artists. Keep exploring!
+
+Visit your recap on our official website: https://www.spotify.com/recap
+
+If you have questions, contact our support team at support@spotify.com.
+
+Thanks for being a Spotify member!
+
+The Spotify Team

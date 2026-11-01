@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🛡️ PhishGuard – Email Threat Detector</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ── Top nav ── */
+    nav {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    nav .logo { font-size: 1.5rem; }
+    nav h1 { font-size: 1.1rem; font-weight: 700; color: #f1f5f9; }
+    nav span { font-size: 0.8rem; color: #64748b; margin-left: 4px; }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 53px);
+    }
+
+    /* ── Sidebar ── */
+    aside {
+      background: #1e293b;
+      border-right: 1px solid #334155;
+      padding: 24px 16px;
+    }
+    .nav-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.88rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-btn:hover  { background: #334155; color: #e2e8f0; }
+    .nav-btn.active { background: #1d4ed8; color: #ffffff; font-weight: 600; }
+    .sidebar-legend { margin-top: 28px; padding: 14px; background: #0f172a; border-radius: 8px; border: 1px solid #334155; }
+    .sidebar-legend p { font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+    .legend-row { font-size: 0.8rem; color: #cbd5e1; margin-bottom: 6px; }
+
+    /* ── Main content ── */
+    main { padding: 32px; overflow-y: auto; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    h2 { font-size: 1.4rem; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+    .page-sub { font-size: 0.88rem; color: #64748b; margin-bottom: 24px; }
+
+    /* ── Textarea ── */
+    textarea {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-family: "Courier New", monospace;
+      font-size: 0.83rem;
+      line-height: 1.6;
+      padding: 14px 16px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    textarea:focus { border-color: #3b82f6; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 11px 24px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary  { background: #3b82f6; color: #fff; }
+    .btn-ghost    { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+    .btn-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+    /* ── Risk badge ── */
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      padding: 6px 20px;
+      border-radius: 24px;
+    }
+    .risk-LOW    { background: #14532d; color: #86efac; }
+    .risk-MEDIUM { background: #713f12; color: #fde68a; }
+    .risk-HIGH   { background: #7f1d1d; color: #fca5a5; }
+
+    /* ── Result panel ── */
+    #result-panel { margin-top: 28px; display: none; }
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+    .stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin-bottom: 6px; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: #f1f5f9; }
+
+    /* ── Indicator cards ── */
+    .section-title { font-size: 0.95rem; font-weight: 700; color: #e2e8f0; margin-bottom: 12px; }
+    .indicator-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-left: 3px solid #f59e0b;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+    }
+    .indicator-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .indicator-name { font-size: 0.88rem; font-weight: 600; color: #fbbf24; }
+    .indicator-pts  { font-size: 0.78rem; background: #451a03; color: #fdba74; padding: 2px 9px; border-radius: 12px; }
+    .indicator-desc { font-size: 0.8rem; color: #94a3b8; line-height: 1.5; }
+    .no-indicators  { background: #14532d22; border: 1px solid #166534; border-radius: 8px; padding: 14px 18px; color: #86efac; font-size: 0.88rem; }
+
+    /* ── Samples panel ── */
+    .sample-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 6px; }
+    .sample-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .sample-card:hover { border-color: #3b82f6; background: #1d3461; }
+    .sample-card h3 { font-size: 0.88rem; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+    .sample-card p  { font-size: 0.78rem; color: #64748b; line-height: 1.4; }
+    .sample-card .s-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 10px; border-radius: 12px; margin-top: 10px; }
+
+    /* ── CSV export ── */
+    .export-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    #scan-all-btn { }
+    #export-csv-btn { display: none; }
+    #bulk-table-wrap { display: none; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th { background: #1e293b; color: #94a3b8; text-align: left; padding: 10px 14px; border-bottom: 1px solid #334155; font-weight: 600; }
+    td { padding: 10px 14px; border-bottom: 1px solid #1e293b; color: #cbd5e1; vertical-align: top; }
+    tr:hover td { background: #1e293b44; }
+
+    /* ── Metrics row (bulk) ── */
+    .metrics-row { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+    .metric-box  { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px 22px; min-width: 110px; text-align: center; }
+    .metric-box .m-val { font-size: 1.8rem; font-weight: 700; color: #f1f5f9; }
+    .metric-box .m-lbl { font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: .06em; }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+
+    /* ── Tip box ── */
+    .tip { background: #1e3a5f33; border: 1px solid #1e40af; border-left: 3px solid #3b82f6; border-radius: 8px; padding: 12px 16px; font-size: 0.82rem; color: #93c5fd; margin-top: 20px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="logo">🛡️</span>
+  <h1>PhishGuard</h1>
+  <span>Email Threat Detector</span>
+</nav>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <button class="nav-btn active" onclick="showPage('analyze')">🔍 Analyze Email</button>
+    <button class="nav-btn"        onclick="showPage('samples')">📂 Sample Emails</button>
+    <button class="nav-btn"        onclick="showPage('bulk')">📊 Bulk Scan &amp; CSV</button>
+
+    <div class="sidebar-legend">
+      <p>Risk Levels</p>
+      <div class="legend-row">🟢 <strong>LOW</strong> &nbsp; 0 – 2 pts</div>
+      <div class="legend-row">🟡 <strong>MEDIUM</strong> &nbsp; 3 – 5 pts</div>
+      <div class="legend-row">🔴 <strong>HIGH</strong> &nbsp; 6+ pts</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- ══ PAGE 1: Analyze Single ══ -->
+    <div id="page-analyze" class="page active">
+      <h2>🔍 Analyze an Email</h2>
+      <p class="page-sub">Paste any email text below and click Analyze to detect phishing indicators.</p>
+
+      <textarea id="email-input" rows="14" placeholder="Paste your email here...
+Example:
+From: security@paypa1-support.com
+To: victim@gmail.com
+Subject: URGENT: Your account has been suspended!!!
+
+Dear Customer, click here NOW: http://192.168.1.1/verify"></textarea>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="runAnalysis()">🔍 Analyze Email</button>
+        <button class="btn btn-ghost"   onclick="clearAll()">✕ Clear</button>
+      </div>
+
+      <div id="result-panel">
+        <hr/>
+        <div class="result-grid">
+          <div class="stat-card">
+            <div class="stat-label">Risk Level</div>
+            <div id="res-badge"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Risk Score</div>
+            <div class="stat-value" id="res-score">—</div>
+          </div>
+        </div>
+
+        <div class="section-title">⚠️ Triggered Indicators</div>
+        <div id="res-indicators"></div>
+
+        <div class="tip">💡 <strong>Tip:</strong> Even a LOW risk result warrants caution. Always verify the sender's domain and avoid clicking unfamiliar links.</div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE 2: Sample Emails ══ -->
+    <div id="page-samples" class="page">
+      <h2>📂 Sample Emails</h2>
+      <p class="page-sub">Click any sample to load it into the analyzer. Includes both safe and phishing examples.</p>
+      <div class="sample-grid" id="sample-grid"></div>
+    </div>
+
+    <!-- ══ PAGE 3: Bulk Scan & CSV ══ -->
+    <div id="page-bulk" class="page">
+      <h2>📊 Bulk Scan &amp; Export CSV</h2>
+      <p class="page-sub">Scan all built-in sample emails at once and download a CSV security report.</p>
+
+      <div class="export-bar">
+        <button class="btn btn-primary" id="scan-all-btn" onclick="runBulkScan()">🚀 Scan All Sample Emails</button>
+        <button class="btn btn-ghost"   id="export-csv-btn" onclick="downloadCSV()">⬇️ Download CSV Report</button>
+      </div>
+
+      <div id="bulk-metrics" class="metrics-row" style="display:none"></div>
+      <div id="bulk-table-wrap">
+        <table id="bulk-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Risk Level</th>
+              <th>Score</th>
+              <th>Indicators</th>
+              <th>Indicator Names</th>
+            </tr>
+          </thead>
+          <tbody id="bulk-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  DETECTION ENGINE  (ported 1-to-1 from analyzer.py)
+// ═══════════════════════════════════════════════════════════════════
+
+const INDICATORS = [
+  {
+    name: "IP-Based URL",
+    desc: "Links that use raw IP addresses instead of real domain names are a strong phishing sign.",
+    regex: /https?:\/\/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/i,
+    pts: 3
+  },
+  {
+    name: "Suspicious URL (HTTP, not HTTPS)",
+    desc: "Legitimate companies use secure HTTPS links. Plain HTTP links may indicate a fake site.",
+    regex: /\bhttp:\/\/[^\s]+/i,
+    pts: 2
+  },
+  {
+    name: "URL Shortener",
+    desc: "Shortened links (bit.ly, tinyurl, etc.) hide the real destination and are often used in phishing.",
+    regex: /https?:\/\/(bit\.ly|tinyurl\.com|goo\.gl|t\.co|ow\.ly|is\.gd|buff\.ly|adf\.ly|short\.link|rb\.gy|cutt\.ly)\/[^\s]+/i,
+    pts: 2
+  },
+  {
+    name: "Suspicious Domain Extension",
+    desc: "Unusual domain extensions like .ru, .tk, .xyz used for known brands are suspicious.",
+    regex: /https?:\/\/[^\s]+\.(ru|tk|xyz|info|top|click|loan|win|gq|cf|ml|ga)[\/\s]/i,
+    pts: 2
+  },
+  {
+    name: "Urgency Language",
+    desc: "Phishing emails pressure you to act fast. Words like 'immediately', 'urgent', '24 hours' are red flags.",
+    regex: /\b(urgent|immediately|act now|verify now|account suspended|limited time|expires in|will be deleted|will be locked|will be closed|last chance|final notice|respond immediately|click now|within \d+ hours?|within \d+ minutes?)\b/i,
+    pts: 2
+  },
+  {
+    name: "Credential Request",
+    desc: "Legitimate companies never ask for passwords, card numbers, or SSNs via email.",
+    regex: /\b(password|credit card|card number|social security|ssn|bank account|pin number|date of birth|mother'?s maiden name)\b/i,
+    pts: 3
+  },
+  {
+    name: "Generic Greeting",
+    desc: "'Dear Customer' or 'Dear User' instead of your real name suggests a mass phishing campaign.",
+    regex: /\b(dear (customer|user|valued customer|account holder|member))\b/i,
+    pts: 1
+  },
+  {
+    name: "Excessive Exclamation Marks",
+    desc: "Multiple '!!!' is a common tactic to create panic and urgency in phishing emails.",
+    regex: /!!!+/,
+    pts: 1
+  },
+  {
+    name: "ALL CAPS Words",
+    desc: "Shouting in all caps (e.g. 'CLICK NOW', 'FREE') is used to trigger emotional reactions.",
+    regex: /\b[A-Z]{4,}\b/,
+    pts: 1
+  },
+  {
+    name: "Brand Impersonation (Misspelling)",
+    desc: "Attackers misspell brand names (paypa1, amaz0n) to create fake-but-similar-looking domains.",
+    regex: /\b(paypa1[.\-]|amaz0n[.\-]|g00gle[.\-]|micr0s0ft[.\-]|app1e[.\-]|faceb00k[.\-]|netfl1x[.\-])/i,
+    pts: 3
+  },
+  {
+    name: "Prize / Lottery Scam Language",
+    desc: "Claims of winning a prize you never entered are a classic phishing lure.",
+    regex: /\b(you (have |'ve )?(won|been selected|been chosen)|congratulations.{0,30}(winner|prize|reward|selected)|free (iphone|ipad|gift card|prize|reward))\b/i,
+    pts: 2
+  }
+  // Sender Domain Mismatch handled as a custom function below
+];
+
+const BRAND_DOMAINS = {
+  paypal:    ["paypal.com"],
+  amazon:    ["amazon.com", "amazon.co.uk"],
+  google:    ["google.com", "accounts.google.com"],
+  microsoft: ["microsoft.com", "live.com", "outlook.com"],
+  apple:     ["apple.com", "icloud.com"],
+  facebook:  ["facebook.com", "fb.com"],
+  netflix:   ["netflix.com"],
+  spotify:   ["spotify.com"]
+};
+
+function checkSenderMismatch(text) {
+  const fromMatch = text.match(/^From:\s*.+@([\w.\-]+)/im);
+  if (!fromMatch) return false;
+  const senderDomain = fromMatch[1].toLowerCase();
+  const lower = text.toLowerCase();
+  for (const [brand, legitDomains] of Object.entries(BRAND_DOMAINS)) {
+    if (lower.includes(brand)) {
+      const isLegit = legitDomains.some(d => senderDomain === d || senderDomain.endsWith("." + d));
+      if (!isLegit) return true;
+    }
+  }
+  return false;
+}
+
+function scoreToRisk(score) {
+  if (score <= 2) return "LOW";
+  if (score <= 5) return "MEDIUM";
+  return "HIGH";
+}
+
+function analyzeText(text) {
+  let score = 0;
+  const triggered = [];
+
+  for (const ind of INDICATORS) {
+    if (ind.regex.test(text)) {
+      score += ind.pts;
+      triggered.push({ name: ind.name, desc: ind.desc, pts: ind.pts });
+    }
+  }
+
+  // Custom: sender domain mismatch
+  if (checkSenderMismatch(text)) {
+    score += 2;
+    triggered.push({
+      name: "Sender Domain Mismatch",
+      desc: "The 'From' domain doesn't match the brand name in the email body.",
+      pts: 2
+    });
+  }
+
+  return { score, risk: scoreToRisk(score), triggered };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  SAMPLE EMAILS
+// ═══════════════════════════════════════════════════════════════════
+
+const SAMPLES = [
+  {
+    label: "Safe – Spotify Newsletter",
+    expectedRisk: "LOW",
+    text: `From: newsletter@spotify.com
+To: john.doe@gmail.com
+Subject: Your Monthly Spotify Recap is Ready
+
+Hi John,
+
+We hope you're enjoying your music this month! Here is your personal listening recap for November.
+
+Your top artists this month:
+1. Arctic Monkeys
+2. Radiohead
+3. Tame Impala
+
+You listened to 312 songs and discovered 14 new artists. Keep exploring!
+
+Visit your recap on our official website: https://www.spotify.com/recap
+
+If you have questions, contact our support team at support@spotify.com.
+
+Thanks for being a Spotify member!
+
+The Spotify Team`
+  },
+  {
+    label: "Safe – Amazon Order Shipped",
+    expectedRisk: "LOW",
+    text: `From: orders@amazon.com
+To: jane.smith@outlook.com
+Subject: Your Amazon Order #112-4857293 Has Shipped
+
+Hello Jane,
+
+Great news! Your recent order has been shipped and is on its way.
+
+Order Details:
+- Item: Wireless Bluetooth Headphones
+- Order Number: #112-4857293
+- Estimated Delivery: November 28, 2024
+
+You can track your package here: https://www.amazon.com/orders/track
+
+If you did not place this order or have any concerns, please contact us at
+cs@amazon.com or visit https://www.amazon.com/help
+
+Thank you for shopping with Amazon.
+
+Best regards,
+Amazon Customer Service`
+  },
+  {
+    label: "⚠️ Phishing – PayPal Suspension",
+    expectedRisk: "HIGH",
+    text: `From: security@paypa1-support.com
+To: victim@gmail.com
+Subject: URGENT: Your PayPal Account Has Been Suspended!!!
+
+Dear Customer,
+
+We have detected unusual activity on your PayPal account. Your account has been SUSPENDED immediately for your protection.
+
+You must verify your account NOW or your account will be permanently deleted within 24 hours!
+
+Click here immediately to restore access:
+http://paypa1-verify-account.ru/login?token=xG92kPa
+
+Please provide the following information to verify your identity:
+- Full name
+- Credit card number
+- Social Security Number
+- Date of birth
+- Password
+
+CLICK HERE NOW: http://192.168.1.105/paypal/verify
+
+Failure to act immediately will result in permanent account closure!!!
+
+ACT NOW BEFORE IT IS TOO LATE!!!
+
+PayPal Security Team
+paypa1-support.com`
+  },
+  {
+    label: "⚠️ Phishing – Fake Amazon Prize",
+    expectedRisk: "HIGH",
+    text: `From: no-reply@amaz0n-deals.net
+To: shopper@yahoo.com
+Subject: Congratulations! You Won a FREE iPhone 15 - Claim Now
+
+Dear Valued Customer,
+
+Congratulations! You have been selected as a LUCKY WINNER of our monthly giveaway!
+
+You have won a FREE Apple iPhone 15 Pro (256GB)!!!
+
+To claim your prize you must verify your shipping address and pay a small handling fee of $2.99.
+
+Claim your FREE iPhone here: http://bit.ly/fr33-iph0ne-claim
+
+Hurry! This offer expires in 1 hour. You must act now!
+
+Enter your credit card details to cover the $2.99 shipping:
+http://amaz0n-giveaway.tk/claim?id=winner293
+
+If you do not claim within 60 minutes your prize will be forfeited!!!
+
+Best Regards,
+Amazon Rewards Team
+amaz0n-deals.net`
+  },
+  {
+    label: "⚠️ Phishing – Fake IT Helpdesk",
+    expectedRisk: "HIGH",
+    text: `From: it-support@your-company-helpdesk.xyz
+To: employee@company.com
+Subject: Action Required: Reset Your Company Password Immediately
+
+Dear User,
+
+Our IT security system has flagged your account for a mandatory password reset due to a potential breach.
+
+You must reset your password within 2 hours or you will lose access to all company systems.
+
+Click the link below to reset your password now:
+http://tinyurl.com/company-reset-password
+
+Please enter your current username and password on the next page to verify your identity before resetting.
+
+This is an automated message. Do not reply to this email.
+
+If you do not reset your password immediately, your account will be locked and you will need to contact HR in person to regain access.
+
+RESET YOUR PASSWORD NOW: http://203.0.113.45/reset/employee-portal
+
+Thank you,
+IT Support Helpdesk
+your-company-helpdesk.xyz`
+  }
+];
+
+// ═══════════════════════════════════════════════════════════════════
+//  UI FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function riskBadgeHTML(risk) {
+  const icons = { LOW: "🟢", MEDIUM: "🟡", HIGH: "🔴" };
+  return `<span class="risk-badge risk-${risk}">${icons[risk] || "⚪"} ${risk}</span>`;
+}
+
+function runAnalysis() {
+  const text = document.getElementById('email-input').value.trim();
+  if (!text) { alert("Please paste an email first."); return; }
+
+  const { score, risk, triggered } = analyzeText(text);
+
+  document.getElementById('res-badge').innerHTML = riskBadgeHTML(risk);
+  document.getElementById('res-score').textContent = score + " pts";
+
+  const indBox = document.getElementById('res-indicators');
+  if (triggered.length === 0) {
+    indBox.innerHTML = `<div class="no-indicators">✅ No phishing indicators detected. This email appears safe.</div>`;
+  } else {
+    indBox.innerHTML = triggered.map(t => `
+      <div class="indicator-card">
+        <div class="indicator-top">
+          <span class="indicator-name">🚩 ${t.name}</span>
+          <span class="indicator-pts">+${t.pts} pts</span>
+        </div>
+        <div class="indicator-desc">${t.desc}</div>
+      </div>`).join('');
+  }
+
+  document.getElementById('result-panel').style.display = 'block';
+}
+
+function clearAll() {
+  document.getElementById('email-input').value = '';
+  document.getElementById('result-panel').style.display = 'none';
+}
+
+// ── Build sample cards ──
+function buildSamples() {
+  const grid = document.getElementById('sample-grid');
+  const colors = { LOW: "badge-green", MEDIUM: "badge-yellow", HIGH: "badge-red" };
+  const icons  = { LOW: "🟢", MEDIUM: "🟡", HIGH: "🔴" };
+
+  grid.innerHTML = SAMPLES.map((s, i) => `
+    <div class="sample-card" onclick="loadSample(${i})">
+      <h3>${s.label}</h3>
+      <p>${s.text.split('\n').slice(0,3).join(' · ').substring(0,80)}…</p>
+      <span class="s-badge ${colors[s.expectedRisk]}">${icons[s.expectedRisk]} Expected: ${s.expectedRisk}</span>
+    </div>`).join('');
+}
+
+function loadSample(i) {
+  document.getElementById('email-input').value = SAMPLES[i].text;
+  document.getElementById('result-panel').style.display = 'none';
+  // Switch to analyze page
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-analyze').classList.add('active');
+  document.querySelectorAll('.nav-btn')[0].classList.add('active');
+  runAnalysis();
+}
+
+// ── Bulk scan ──
+let bulkResults = [];
+
+function runBulkScan() {
+  bulkResults = SAMPLES.map(s => {
+    const { score, risk, triggered } = analyzeText(s.text);
+    return { name: s.label, score, risk, triggered };
+  });
+
+  // Metrics
+  const high   = bulkResults.filter(r => r.risk === "HIGH").length;
+  const medium = bulkResults.filter(r => r.risk === "MEDIUM").length;
+  const low    = bulkResults.filter(r => r.risk === "LOW").length;
+
+  const mBox = document.getElementById('bulk-metrics');
+  mBox.style.display = 'flex';
+  mBox.innerHTML = `
+    <div class="metric-box"><div class="m-val">${bulkResults.length}</div><div class="m-lbl">Total</div></div>
+    <div class="metric-box"><div class="m-val" style="color:#fca5a5">${high}</div><div class="m-lbl">🔴 HIGH</div></div>
+    <div class="metric-box"><div class="m-val" style="color:#fde68a">${medium}</div><div class="m-lbl">🟡 MEDIUM</div></div>
+    <div class="metric-box"><div class="m-val" style="color:#86efac">${low}</div><div class="m-lbl">🟢 LOW</div></div>`;
+
+  // Table
+  const tbody = document.getElementById('bulk-tbody');
+  tbody.innerHTML = bulkResults.map(r => {
+    const names = r.triggered.map(t => t.name).join('; ') || 'None';
+    return `<tr>
+      <td>${r.name}</td>
+      <td>${riskBadgeHTML(r.risk)}</td>
+      <td>${r.score}</td>
+      <td>${r.triggered.length}</td>
+      <td style="color:#94a3b8;font-size:0.77rem">${names}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('bulk-table-wrap').style.display = 'block';
+  document.getElementById('export-csv-btn').style.display  = 'inline-block';
+}
+
+function downloadCSV() {
+  if (!bulkResults.length) return;
+  const ts = new Date().toISOString().replace('T', ' ').substring(0, 19);
+  const rows = [
+    ["Timestamp", "Email", "Risk Level", "Score", "Indicators Found", "Indicator Names"]
+  ];
+  for (const r of bulkResults) {
+    const names = r.triggered.map(t => t.name).join('; ') || 'None';
+    rows.push([ts, r.name, r.risk, r.score, r.triggered.length, names]);
+  }
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `phishguard_report_${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Init ──
+buildSamples();
+</script>
+</body>
+</html>

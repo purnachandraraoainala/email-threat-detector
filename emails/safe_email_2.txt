@@ -1,0 +1,22 @@
+From: orders@amazon.com
+To: jane.smith@outlook.com
+Subject: Your Amazon Order #112-4857293-1234567 Has Shipped
+
+Hello Jane,
+
+Great news! Your recent order has been shipped and is on its way.
+
+Order Details:
+- Item: Wireless Bluetooth Headphones
+- Order Number: #112-4857293-1234567
+- Estimated Delivery: November 28, 2024
+
+You can track your package here: https://www.amazon.com/orders/track
+
+If you did not place this order or have any concerns, please contact us at
+cs@amazon.com or visit https://www.amazon.com/help
+
+Thank you for shopping with Amazon.
+
+Best regards,
+Amazon Customer Service

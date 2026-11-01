@@ -1,0 +1,6 @@
+Timestamp,Filename,Risk Level,Score,Indicators Found,Indicator Names,File Path
+2026-10-31 13:28:29,phishing_email_2.txt,HIGH,21,11,"Suspicious URL (HTTP, not HTTPS); URL Shortener; Suspicious Domain Extension; Urgency Language; Credential Request; Generic Greeting; Excessive Exclamation Marks; ALL CAPS Words; Brand Impersonation (Misspelling); Prize / Lottery Scam Language; Sender Domain Mismatch",/home/kali/.bob/playground/phishguard/emails/phishing_email_2.txt
+2026-10-31 13:28:29,phishing_email_1.txt,HIGH,20,10,"IP-Based URL; Suspicious URL (HTTP, not HTTPS); Suspicious Domain Extension; Urgency Language; Credential Request; Generic Greeting; Excessive Exclamation Marks; ALL CAPS Words; Brand Impersonation (Misspelling); Sender Domain Mismatch",/home/kali/.bob/playground/phishguard/emails/phishing_email_1.txt
+2026-10-31 13:28:29,phishing_email_3.txt,HIGH,14,7,"IP-Based URL; Suspicious URL (HTTP, not HTTPS); URL Shortener; Urgency Language; Credential Request; Generic Greeting; ALL CAPS Words",/home/kali/.bob/playground/phishguard/emails/phishing_email_3.txt
+2026-10-31 13:28:29,safe_email_1.txt,LOW,0,0,None,/home/kali/.bob/playground/phishguard/emails/safe_email_1.txt
+2026-10-31 13:28:29,safe_email_2.txt,LOW,0,0,None,/home/kali/.bob/playground/phishguard/emails/safe_email_2.txt

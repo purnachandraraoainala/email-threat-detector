@@ -1,0 +1,28 @@
+From: security@paypa1-support.com
+To: victim@gmail.com
+Subject: URGENT: Your PayPal Account Has Been Suspended!!!
+
+Dear Customer,
+
+We have detected unusual activity on your PayPal account. Your account has been SUSPENDED immediately for your protection.
+
+You must verify your account NOW or your account will be permanently deleted within 24 hours!
+
+Click here immediately to restore access:
+http://paypa1-verify-account.ru/login?token=xG92kPa
+
+Please provide the following information to verify your identity:
+- Full name
+- Credit card number
+- Social Security Number
+- Date of birth
+- Password
+
+CLICK HERE NOW: http://192.168.1.105/paypal/verify
+
+Failure to act immediately will result in permanent account closure!!!
+
+ACT NOW BEFORE IT IS TOO LATE!!!
+
+PayPal Security Team
+paypa1-support.com
